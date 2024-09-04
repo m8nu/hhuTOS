@@ -52,19 +52,26 @@ args = [ "-f", "elf64", "-w+error=label-redef-late", "-o", "${BUILD_DIRECTORY}/b
 command = "nasm"
 args = [ "-f", "elf64", "-w+error=label-redef-late", "-o", "${BUILD_DIRECTORY}/interrupts.o", "${SOURCE_DIRECTORY}/kernel/interrupts/interrupts.asm" ]
 
+[tasks.build-coroutine-asm]
+command = "nasm"
+args = [ "-f", "elf64", "-w+error=label-redef-late", "-o", "${BUILD_DIRECTORY}/coroutine.o", "${SOURCE_DIRECTORY}/kernel/corouts/coroutine.asm" ]
+
+[tasks.build-thread-asm]
+command = "nasm"
+args = [ "-f", "elf64", "-w+error=label-redef-late", "-o", "${BUILD_DIRECTORY}/thread.o", "${SOURCE_DIRECTORY}/kernel/threads/thread.asm" ]
+
 # 
 # Linking 
 #
 [tasks.link.mac]
 command = "${LINKER_MAC}"
-args = [ "-n", "-T", "${LINKER_FILE}", "-o", "${KERNEL}", "${BUILD_DIRECTORY}/boot.o", "${BUILD_DIRECTORY}/interrupts.o", "${RUST_OBJECT}" ]
-dependencies = [ "compile", "build-boot-asm", "build-interrupt-asm" ]
+args = [ "-n", "-T", "${LINKER_FILE}", "-o", "${KERNEL}", "${BUILD_DIRECTORY}/boot.o", "${BUILD_DIRECTORY}/interrupts.o", "${BUILD_DIRECTORY}/coroutine.o", "${BUILD_DIRECTORY}/thread.o", "${RUST_OBJECT}" ]
+dependencies = [ "compile", "build-boot-asm", "build-interrupt-asm",  "build-coroutine-asm", "build-thread-asm"  ]
 
 [tasks.link.linux]
 command = "${LINKER_LINUX}"
-args = [ "-n", "-T", "${LINKER_FILE}", "-o", "${KERNEL}", "${BUILD_DIRECTORY}/boot.o", "${BUILD_DIRECTORY}/interrupts.o", "${RUST_OBJECT}" ]
-dependencies = [ "compile", "build-boot-asm", "build-interrupt-asm" ]
-
+args = [ "-n", "-T", "${LINKER_FILE}", "-o", "${KERNEL}", "${BUILD_DIRECTORY}/boot.o", "${BUILD_DIRECTORY}/interrupts.o", "${BUILD_DIRECTORY}/coroutine.o", "${BUILD_DIRECTORY}/thread.o", "${RUST_OBJECT}" ]
+dependencies = [ "compile", "build-boot-asm", "build-interrupt-asm",  "build-coroutine-asm", "build-thread-asm" ]
 #
 # Bootloader tasks
 #
