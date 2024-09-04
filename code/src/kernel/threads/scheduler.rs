@@ -20,6 +20,10 @@ use crate::mylib::queue;
 
 static THREAD_ID_COUNTER: AtomicUsize = AtomicUsize::new(0);
 
+pub fn set_initialized() {
+    SCHEDULER.lock().initialized = true;
+}
+
 pub fn next_thread_id() -> usize {
     THREAD_ID_COUNTER.fetch_add(1, core::sync::atomic::Ordering::SeqCst)
 }
@@ -36,7 +40,9 @@ pub fn get_active_tid() -> usize {
 pub struct Scheduler {
     active: *mut thread::Thread,
     ready_queue: queue::Queue<Box<thread::Thread>>, // auf die CPU wartende Threads
+    initialized: bool,
 }
+
 
 unsafe impl Send for Scheduler {}
 
@@ -48,8 +54,27 @@ impl Scheduler {
         Scheduler {
             active: ptr::null_mut(),
             ready_queue: queue::Queue::new(),
+            initialized: false,
         }
     }
+
+    /**
+        Description: Check if we can switch from the current running thread to another one. \
+                     If doable prepare everything and return raw pointers to current and next thread. \
+                     The switching of threads is done from within the ISR of the PIT, in order to \
+                     release the lock of the scheduler. 
+
+        Return: \
+               `(current,next)` current thread, next thread (to switch to)
+    */
+    pub fn prepare_preempt(&mut self) -> (*mut thread::Thread, *mut thread::Thread) {
+        // If the scheduler is not initialized, we abort
+        if self.initialized == false {
+            return (ptr::null_mut(), ptr::null_mut());
+        }
+
+      /* Hier muss Code eingefuegt werden */
+    } 
 
     /**
      Description: Start the scheduler. Called only once from 'startup'
@@ -111,7 +136,7 @@ impl Scheduler {
             let current_active = SCHEDULER.lock().active;
             SCHEDULER.lock().ready_queue.enqueue(unsafe { Box::from_raw(current_active) });
             SCHEDULER.lock().active = that.as_mut();
-            thread::Thread::switch(current_active, that.as_mut());
+            thread::Thread::switch(current_active, Box::into_raw(that));
         } else {
             return;
         }

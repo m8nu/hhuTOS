@@ -38,6 +38,7 @@ use kernel::cpu;
 
 use kernel::interrupts;
 use kernel::interrupts::intdispatcher::int_disp;
+use kernel::threads::idle_thread;
 use kernel::threads::scheduler;
 use user::aufgabe1::text_demo;
 use user::aufgabe1::keyboard_demo;
@@ -73,7 +74,9 @@ fn aufgabe3() {
 
 fn aufgabe4() {
     //corouts_demo::run();
-    hello_world_thread::init();
+    //hello_world_thread::init();
+    //coop_thread_demo::init();
+    coop_thread_loop::init();	
 }
 
 #[no_mangle]
@@ -84,6 +87,9 @@ pub extern "C" fn startup() {
 
     // Speicherverwaltung initialisieren
     allocator::init();
+
+    //idle thread
+    idle_thread::init();
 
     // init interrupts
     interrupts::init();
