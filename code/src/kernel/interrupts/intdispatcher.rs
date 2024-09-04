@@ -13,6 +13,8 @@
 */
 extern crate spin;
 
+use core::borrow::Borrow;
+
 use crate::kernel::cpu;
 use crate::kernel::interrupts::isr;
 use alloc::{boxed::Box, vec::Vec};
@@ -36,6 +38,8 @@ pub extern "C" fn int_disp(vector: u32) {
         kprint!(" - processor halted.");
         cpu::halt();
     }
+
+    //kprint!("int_disp: vector = {}\n", vector);
 }
 
 const MAX_VEC_NUM: usize = 256;
@@ -74,8 +78,13 @@ pub fn init() {
 */
 pub fn register(vector: usize, isr: Box<dyn isr::ISR>) -> bool {
 
-   /* Hier muss Code eingefuegt werden */
-
+    /* Hier muss Code eingefuegt werden */
+    if vector > MAX_VEC_NUM {
+        return false;
+    } else {
+        INT_VECTORS.lock().map[vector] = isr;
+        return true;
+    }
 }
 
 /**
@@ -87,6 +96,12 @@ Parameters: \
 */
 pub fn report(vector: usize) -> bool {
 
-   /* Hier muss Code eingefuegt werden */
-
+    /* Hier muss Code eingefuegt werden */
+    let default = INT_VECTORS.lock().map[vector].is_default_isr();
+    if default == true {
+        return false;
+    } else {
+        INT_VECTORS.lock().map[vector].trigger();
+        return true;
+    }
 }

@@ -8,6 +8,7 @@
    ╚═════════════════════════════════════════════════════════════════════════╝
 */
 
+use alloc::boxed::Box;
 use spin::Mutex;
 
 
@@ -15,7 +16,9 @@ use crate::kernel::cpu::{self as cpu, inb};
 use crate::devices::key as key;  // shortcut for key
 use crate::cpu::outb;
 use core::sync::atomic::{AtomicU8,Ordering};
+use crate::kernel::interrupts::{intdispatcher, isr, pic as pic};
 
+use super::cga;
 use super::key::Key;
 
 
@@ -127,8 +130,12 @@ const KBD_REPLY_ACK:u8 = 0xfa;
       *****************************************************************************/
      fn trigger(&self) {
           
-        /* Hier muss Code eingefuegt werden */
-        
+      /* Hier muss Code eingefuegt werden */
+      let mut kb = KB.lock();
+      let mut key = kb.key_hit_irq();
+      if key.valid() {
+         LAST_KEY.store(key.asc, Ordering::SeqCst);
+      }
      }
 }
 
@@ -148,12 +155,20 @@ impl Keyboard {
      fn key_hit_irq(&mut self) -> key::Key {
   
       /* Hier muss Code eingefuegt werden */
-      
+      let invalid: key::Key = Default::default();  // nicht explizit initialisierte Tasten sind ungueltig
+
+      while (inb(KBD_CTRL_PORT) & KBD_OUTB) == 0 { } //wait until output buffer is full
+      self.code = cpu::inb(KBD_DATA_PORT);           //read from data port
+
+      if (inb(KBD_CTRL_PORT) & KBD_AUXB) == 1 { return invalid; } //check if it is a mouse event
+
+
+      if self.key_decoded() { return self.gather; //check if key is decoded
+      } else { return invalid; } //return invalid key
+
       /* Im Unterschied zum bestehenden 'key_hit' wird hier nur ein Byte ein-
        * gelesen, also nicht so viele Bytes, bis ein Zeichen dekodiert wurde 
-       */     
-      
-      return invalid;
+       */
   }
   
   
@@ -168,7 +183,8 @@ impl Keyboard {
   pub fn plugin() { 
        
      /* Hier muss Code eingefuegt werden */
-     
+     pic::allow(pic::IRQ_KEYBOARD);
+     intdispatcher::register(intdispatcher::INT_VEC_KEYBOARD, Box::new(KeyboardISR));
   }
 
    /*****************************************************************************

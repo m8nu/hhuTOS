@@ -34,6 +34,8 @@ use devices::keyboard;    // shortcut for keyboard
 
 use kernel::cpu;
 
+use kernel::interrupts;
+use kernel::interrupts::intdispatcher::int_disp;
 use user::aufgabe1::text_demo;
 use user::aufgabe1::keyboard_demo;
 
@@ -41,6 +43,7 @@ use kernel::allocator;
 
 use user::aufgabe2::heap_demo;
 use user::aufgabe2::sound_demo;
+use user::aufgabe3::keyboard_irq_demo;
 
 
 fn aufgabe1() {
@@ -56,7 +59,7 @@ fn aufgabe2() {
 
 fn aufgabe3() {
     cga::clear();
-    //keyboard_irq_demo::run();
+    keyboard_irq_demo::run();
 }
 
 #[no_mangle]
@@ -69,15 +72,20 @@ pub extern "C" fn startup() {
     allocator::init();
 
     // init interrupts
+    interrupts::init();
 
     // register keyboard ISR
+    
+    //plugin keyboard interrupt
+    keyboard::Keyboard::plugin();
    
     // CPU enable ints
+    cpu::enable_int();
 
 	cga::clear();
     //aufgabe1();
-    aufgabe2();
-    //aufgabe3();
+    //aufgabe2();
+    aufgabe3();
     
     loop{}
 }

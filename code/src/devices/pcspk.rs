@@ -130,7 +130,7 @@ fn read_counter() -> u32 {
  Parameters: \
             `d` duration in ms
 */
-fn delay(mut d: u32) {
+fn delay(d: u32) {
 
     /* Hier muss Code eingefuegt werden */
     outb(PORT_CTRL, 0b00110100); //Mode2 Counter0
