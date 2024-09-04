@@ -7,6 +7,6 @@ pub fn init() {
 }
 
 #[no_mangle]
-extern "C" fn hello_world_thread_entry() {
+extern "C" fn hello_world_thread_entry(myself: *mut Thread) {
     println!("Hallo Welt von einem Thread!");
 }

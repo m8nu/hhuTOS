@@ -8,6 +8,7 @@
    ╚═════════════════════════════════════════════════════════════════════════╝
 */
 use alloc::boxed::Box;
+use core::any::Any;
 use core::ptr;
 use core::sync::atomic::AtomicUsize;
 use spin::Mutex;
@@ -103,9 +104,17 @@ impl Scheduler {
         Description: Yield cpu and switch to next thread
     */
     pub fn yield_cpu() {
+        /* Hier muss Code eingefuegt werden */
+        let next_thread = SCHEDULER.lock().ready_queue.dequeue();
 
-       /* Hier muss Code eingefuegt werden */
-
+        if let Some(mut that) = next_thread {
+            let current_active = SCHEDULER.lock().active;
+            SCHEDULER.lock().ready_queue.enqueue(unsafe { Box::from_raw(current_active) });
+            SCHEDULER.lock().active = that.as_mut();
+            thread::Thread::switch(current_active, that.as_mut());
+        } else {
+            return;
+        }
     }
 
     /**
@@ -117,7 +126,10 @@ impl Scheduler {
     */
     pub fn kill(tokill_tid: usize) {
 
-       /* Hier muss Code eingefuegt werden */
-
+        /* Hier muss Code eingefuegt werden */
+        if tokill_tid == get_active_tid(){
+            return;
+        }
+        SCHEDULER.lock().ready_queue.remove(thread::Thread::new(tokill_tid,thread::kickoff_thread));
     }
 }

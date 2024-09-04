@@ -16,5 +16,5 @@ extern "C" fn coop_demo_thread_entry(myself: *mut thread::Thread) {
 pub fn init() -> usize {
 
    /* Hier muss Code eingefuegt werden */
-
+   return 0;
 }

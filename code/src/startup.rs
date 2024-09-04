@@ -25,6 +25,7 @@ mod devices;
 mod kernel;
 mod user;
 mod consts;
+pub mod mylib;
 
 use core::panic::PanicInfo;
 
@@ -32,10 +33,12 @@ use devices::cga;         // shortcut for cga
 use devices::cga_print;   // used to import code needed by println! 
 use devices::keyboard;    // shortcut for keyboard
 
+use kernel::corouts;
 use kernel::cpu;
 
 use kernel::interrupts;
 use kernel::interrupts::intdispatcher::int_disp;
+use kernel::threads::scheduler;
 use user::aufgabe1::text_demo;
 use user::aufgabe1::keyboard_demo;
 
@@ -44,6 +47,12 @@ use kernel::allocator;
 use user::aufgabe2::heap_demo;
 use user::aufgabe2::sound_demo;
 use user::aufgabe3::keyboard_irq_demo;
+
+use user::aufgabe4::corouts_demo;
+use user::aufgabe4::hello_world_thread;
+use user::aufgabe4::coop_thread_demo;
+use user::aufgabe4::coop_thread_loop;
+
 
 
 fn aufgabe1() {
@@ -60,6 +69,11 @@ fn aufgabe2() {
 fn aufgabe3() {
     cga::clear();
     keyboard_irq_demo::run();
+}
+
+fn aufgabe4() {
+    //corouts_demo::run();
+    hello_world_thread::init();
 }
 
 #[no_mangle]
@@ -85,8 +99,11 @@ pub extern "C" fn startup() {
 	cga::clear();
     //aufgabe1();
     //aufgabe2();
-    aufgabe3();
-    
+    //aufgabe3();
+    aufgabe4();
+
+    scheduler::Scheduler::schedule();
+
     loop{}
 }
 

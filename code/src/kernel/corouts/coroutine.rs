@@ -58,7 +58,9 @@ impl Coroutine {
     pub fn start(cor: *mut Coroutine) {
 
        /* Hier muss Code eingefuegt werden */
-
+        unsafe {
+            _coroutine_start((*cor).stack_ptr);
+        }
     }
 
     /**
@@ -67,6 +69,10 @@ impl Coroutine {
     pub fn switch2next(now: *mut Coroutine) {
 
        /* Hier muss Code eingefuegt werden */
+       unsafe {
+            _coroutine_switch( &mut (*now).stack_ptr,               
+            (*(*now).next).stack_ptr);
+        }
 
     }
 

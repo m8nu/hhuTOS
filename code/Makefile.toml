@@ -3,6 +3,13 @@
 # Environment variables
 ######################################
 
+#
+# Check (for vscode)
+#
+[tasks.check]
+command= "cargo"
+args = [ "check", "--quiet", "--workspace", "--message-format=json", "-Z", "build-std=core,alloc", "-Z", "build-std-features=compiler-builtins-mem", "--target", "${CARGO_CFG_TARGET_FAMILY}", "${CARGO_BUILD_OPTION}" ]
+
 [env.development]
 CARGO_CFG_TARGET_FAMILY = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/hhu_tosr.json"
 BUILD_DIRECTORY = "${CARGO_MAKE_CRATE_TARGET_DIRECTORY}/hhu_tosr/debug"
