@@ -181,9 +181,19 @@ impl Scheduler {
                `(current,next)` current thread, next thread (to switch to)
     */
     pub fn prepare_block(&mut self) -> (*mut thread::Thread, *mut thread::Thread) {
-  
+        // If the scheduler is not initialized, we abort
+        if self.initialized == false {
+            return (ptr::null_mut(), ptr::null_mut());
+        }
         /* Hier muss Code eingefuegt werden */
-        
+        let cur = self.active;
+        let next = self.ready_queue.dequeue();
+        if let Some(that) = next {
+            self.active = Box::into_raw(that);
+        return (cur, self.active);
+        } else {
+        panic!("No thread to switch to");
+        }
     }
 }
 

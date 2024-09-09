@@ -10,10 +10,11 @@
 */
 
 use alloc::boxed::Box;
+use core::ptr::{self, null};
 use core::sync::atomic::{AtomicBool, Ordering};
 
 use crate::kernel::cpu;
-use crate::kernel::threads::scheduler;
+use crate::kernel::threads::scheduler::{self, prepare_block, Scheduler};
 use crate::kernel::threads::thread::Thread;
 use crate::mylib::queue::Queue;
 use crate::mylib::spinlock::Spinlock;
@@ -33,7 +34,11 @@ unsafe impl Send for Mutex {}
 impl Mutex {
     pub const fn new() -> Mutex {
 			
-			  /* Hier muss Code eingefuegt werden */
+	/* Hier muss Code eingefuegt werden */
+    return Mutex {
+        lock: AtomicBool::new(false),
+        wait_queue: Spinlock::new(Queue::new()),
+    };
 
     }
 
@@ -41,17 +46,34 @@ impl Mutex {
      Description: Get the mutex.
     */
     pub fn lock(&self) -> MutexGuard {
+		/* Hier muss Code eingefuegt werden */
+        let l = self.lock.load(Ordering::SeqCst);
+        if l {
+            let (curr, next) = prepare_block();
+            if curr == ptr::null_mut() || next == ptr::null_mut() || curr == next {
+                panic!("No threads to switch to");
+            } else {
+                unsafe {self.wait_queue.lock().enqueue(Box::from_raw(curr)); }
+                Thread::switch(curr, next);
+            }
+        } else {
+            self.lock.store(true, Ordering::SeqCst);
+        }
 
-			  /* Hier muss Code eingefuegt werden */
-
+        MutexGuard { lock: self }
     }
 
     /**
      Description: Free the mutex. Called from `drop` in the `MutexGuard`
     */
     fn unlock(&self) {
+		/* Hier muss Code eingefuegt werden */
+        if let Some(q) = self.wait_queue.lock().dequeue(){
+            scheduler::deblock(Box::into_raw(q));
+        } else {
+            self.lock.store(false, Ordering::SeqCst);
+        }
 
-			  /* Hier muss Code eingefuegt werden */
 
     }
 

@@ -57,6 +57,8 @@ use user::aufgabe4::coop_thread_loop;
 
 use user::aufgabe5;
 
+use user::aufgabe6;
+
 
 
 fn aufgabe1() {
@@ -114,7 +116,9 @@ pub extern "C" fn startup() {
     //aufgabe3();
     //aufgabe4();
 
-    aufgabe5::preem_thread_demo::init();
+    //aufgabe5::preem_thread_demo::init();
+
+    aufgabe6::semaphore_demo::init();
 
     scheduler::Scheduler::schedule();
 
