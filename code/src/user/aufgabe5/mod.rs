@@ -1,2 +1,1 @@
-pub mod coop_thread_demo;
-pub mod coop_thread_loop;
+pub mod preem_thread_demo;

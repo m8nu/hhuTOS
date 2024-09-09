@@ -114,7 +114,7 @@ pub extern "C" fn startup() {
     //aufgabe3();
     //aufgabe4();
 
-    aufgabe5::coop_thread_demo::init();
+    aufgabe5::preem_thread_demo::init();
 
     scheduler::Scheduler::schedule();
 
