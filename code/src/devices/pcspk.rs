@@ -11,6 +11,7 @@
 
 use crate::kernel::cpu::inb;
 use crate::kernel::cpu::outb;
+use crate::devices::pit;
 
 use super::kprint;
 
@@ -133,6 +134,7 @@ fn read_counter() -> u32 {
 fn delay(d: u32) {
 
     /* Hier muss Code eingefuegt werden */
+    /*
     outb(PORT_CTRL, 0b00110100); //Mode2 Counter0
 
     let freq = 11932;
@@ -150,6 +152,12 @@ fn delay(d: u32) {
        }
        c = new;
     }
+    */
+    if d < 10 {
+        return;
+    }
+    let start = pit::get_systime();
+    while start + (d/10) as u64 > pit::get_systime() {}
 }
 
 

@@ -6,6 +6,7 @@ pub mod keyboard;
 pub mod key;
 pub mod serial;
 pub mod pcspk;
+pub mod pit;
 
 #[macro_use]
 pub mod kprint;

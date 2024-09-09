@@ -6,8 +6,8 @@ extern "C" fn idle_thread_entry(myself: *mut thread::Thread) {
    scheduler::set_initialized();
     loop {
         // println!("idle: tid={}", id);
-									//print!("I");
-	        scheduler::Scheduler::yield_cpu();
+		//print!("I");
+	    //scheduler::Scheduler::yield_cpu();
     }
 }
 

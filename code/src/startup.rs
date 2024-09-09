@@ -37,6 +37,7 @@ use kernel::corouts;
 use kernel::cpu;
 
 use kernel::interrupts;
+use kernel::interrupts::intdispatcher;
 use kernel::interrupts::intdispatcher::int_disp;
 use kernel::threads::idle_thread;
 use kernel::threads::scheduler;
@@ -54,6 +55,8 @@ use user::aufgabe4::hello_world_thread;
 use user::aufgabe4::coop_thread_demo;
 use user::aufgabe4::coop_thread_loop;
 
+use user::aufgabe5;
+
 
 
 fn aufgabe1() {
@@ -63,7 +66,7 @@ fn aufgabe1() {
 }
 
 fn aufgabe2() {
-   heap_demo::run();
+   //heap_demo::run();
    sound_demo::run();
 }
 
@@ -95,9 +98,12 @@ pub extern "C" fn startup() {
     interrupts::init();
 
     // register keyboard ISR
-    
+
     //plugin keyboard interrupt
     keyboard::Keyboard::plugin();
+
+    //plugin pit interrupt
+    devices::pit::plugin();
    
     // CPU enable ints
     cpu::enable_int();
@@ -106,7 +112,9 @@ pub extern "C" fn startup() {
     //aufgabe1();
     //aufgabe2();
     //aufgabe3();
-    aufgabe4();
+    //aufgabe4();
+
+    aufgabe5::coop_thread_demo::init();
 
     scheduler::Scheduler::schedule();
 

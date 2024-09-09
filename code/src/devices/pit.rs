@@ -20,6 +20,9 @@ use crate::kernel::threads::scheduler;
 use crate::kernel::threads::scheduler::SCHEDULER;
 use crate::kernel::threads::thread;
 
+use super::cga::setpos;
+use super::kprint;
+
 // read systime
 pub fn get_systime() -> u64 {
     SYS_TIME.load(Ordering::SeqCst)
@@ -42,6 +45,10 @@ static SYS_TIME_DISPLAY: AtomicUsize = AtomicUsize::new(0);
 pub fn interval(x: u32) {
 
     /* Hier muss Code eingefuegt werden */
+    cpu::outb(PORT_CTRL, 0b00110110); //Counter 0 Mod 3
+
+    cpu::outb(PORT_DATA0, ((x*1193) & 0xff) as u8);
+    cpu::outb(PORT_DATA0, (((x*1193) >> 8) & 0xff) as u8);
 
 }
 
@@ -58,6 +65,16 @@ pub fn plugin() {
 
    /* Hier muss Code eingefuegt werden */
 
+    // Register the ISR in the interrupt dispatcher
+    let pit_isr = Box::new(PitISR {});
+    
+    intdispatcher::register(0x20, pit_isr);
+
+    // Allow the timer IRQ in the PIC
+    pic::allow(pic::IRQ_TIMER);
+
+    // Start the pit
+    interval(10);
 }
 
 struct PitISR;
@@ -69,16 +86,30 @@ impl isr::ISR for PitISR {
     fn trigger(&self) {
            
         // progress system time by one tick
+        let time = SYS_TIME.fetch_add(1, Ordering::SeqCst);
 
         /* Hier muss Code eingefuegt werden */
 
         // Rotate the spinner each 100 ticks. One tick is 10ms, so the spinner
         // rotates 360 degress in about 1s
- 
+        let s: [char; 4] = ['|', '/', '-', '\\'];
+        if time % 100 == 0 {
+            let time_display = SYS_TIME_DISPLAY.fetch_add(1, Ordering::SeqCst);
+            let (x,y) = cga::getpos();
+            cga::setpos(79, 0);
+            cga::print_byte(s[time_display % 4] as u8);
+            cga::setpos(x, y);
+        
+        }
         /* Hier muss Code eingefuegt werden */
 
         // We try to switch to the next thread
- 
+        let (cur, next) = scheduler::SCHEDULER.try_lock().unwrap().prepare_preempt();
+        if cur.is_null() || next.is_null() || cur == next {
+            return;
+        } else {
+            thread::Thread::switch(cur, next);
+        }
         /* Hier muss Code eingefuegt werden */
 
     }
