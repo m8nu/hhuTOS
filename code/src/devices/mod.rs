@@ -7,6 +7,8 @@ pub mod key;
 pub mod serial;
 pub mod pcspk;
 pub mod pit;
+pub mod vga;
+pub mod fonts;
 
 #[macro_use]
 pub mod kprint;
