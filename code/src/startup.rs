@@ -59,6 +59,8 @@ use user::aufgabe5;
 
 use user::aufgabe6;
 
+use user::aufgabe7;
+
 use devices::vga;
 
 
@@ -148,6 +150,7 @@ pub extern "C" fn startup(mbi: u64){
 
     //aufgabe6::semaphore_demo::init();
 
+    aufgabe7::game_of_life::init();
     scheduler::Scheduler::schedule();
 
     loop{}
