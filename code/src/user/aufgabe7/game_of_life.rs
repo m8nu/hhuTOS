@@ -195,12 +195,38 @@ extern "C" fn game_run(myself: *mut thread::Thread) {
 
 
     //Glider
+    //board.field[1][2] = true;
+    //board.field[2][3] = true;
+    //board.field[3][1] = true;
+    //board.field[3][2] = true;
+    //board.field[3][3] = true;
+
     board.field[1][2] = true;
     board.field[2][3] = true;
     board.field[3][1] = true;
     board.field[3][2] = true;
     board.field[3][3] = true;
 
+    board.field[15][20] = true;
+    board.field[15][21] = true;
+    board.field[15][22] = true;
+
+
+    board.field[25][10] = true;
+    board.field[25][11] = true;
+    board.field[25][12] = true;
+    board.field[26][9] = true;
+    board.field[26][10] = true;
+    board.field[26][11] = true;
+
+    board.field[5][35] = true;
+    board.field[5][36] = true;
+    board.field[6][35] = true;
+    board.field[6][36] = true;
+    board.field[7][37] = true;
+    board.field[7][38] = true;
+    board.field[8][37] = true;
+    board.field[8][38] = true;
 
 
     board.draw_board();
