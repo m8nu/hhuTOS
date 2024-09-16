@@ -30,7 +30,8 @@ pub mod mylib;
 use core::panic::PanicInfo;
 
 use devices::cga;         // shortcut for cga
-use devices::cga_print;   // used to import code needed by println! 
+use devices::cga_print;   use devices::key;
+// used to import code needed by println! 
 use devices::keyboard;    // shortcut for keyboard
 
 use kernel::corouts;
@@ -41,6 +42,7 @@ use kernel::interrupts::intdispatcher;
 use kernel::interrupts::intdispatcher::int_disp;
 use kernel::threads::idle_thread;
 use kernel::threads::scheduler;
+use mylib::input::getch;
 use user::aufgabe1::text_demo;
 use user::aufgabe1::keyboard_demo;
 
@@ -59,6 +61,7 @@ use user::aufgabe5;
 
 use user::aufgabe6;
 
+use user::aufgabe6::semaphore_demo;
 use user::aufgabe7;
 
 use devices::vga;
@@ -111,6 +114,29 @@ fn check_graphics_mode(mbi: u64) -> bool {
     true
 }
 
+fn show_menu(){
+    cga::clear();
+    println!("1. Textausgabe und Tastatureingabe");
+    println!("2. Sound abspielen");
+    println!("3. Speicherverwaltung");
+    println!("4. Preemptives Multitasking");
+
+
+        let input = getch();
+        if input == '1' as u8{
+            aufgabe1();
+        } else if input == '2' as u8 {
+            aufgabe2();
+        } else if input == '3' as u8 {
+            heap_demo::run();
+        } else if input == '4' as u8 {
+            aufgabe6::semaphore_demo::init();
+        } else {
+            println!("ERR: Unbekannter input! System bitte neustarten");
+        }
+
+}
+
 #[no_mangle]
 pub extern "C" fn startup(mbi: u64){
 	 
@@ -136,11 +162,11 @@ pub extern "C" fn startup(mbi: u64){
 
     //plugin pit interrupt
     devices::pit::plugin();
-   
+
     // CPU enable ints
     cpu::enable_int();
 
-	cga::clear();
+    show_menu();
     //aufgabe1();
     //aufgabe2();
     //aufgabe3();
@@ -150,7 +176,7 @@ pub extern "C" fn startup(mbi: u64){
 
     //aufgabe6::semaphore_demo::init();
 
-    aufgabe7::game_of_life::init();
+    //aufgabe7::game_of_life::init();
     scheduler::Scheduler::schedule();
 
     loop{}

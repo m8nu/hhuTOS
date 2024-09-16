@@ -2,6 +2,7 @@
 use crate::devices::cga as cga;  
 use crate::devices::cga_print;       
 use crate::devices::key as key;     
+use crate::devices::keyboard::get_lastkey;
 use crate::devices::keyboard as keyboard;  
 use crate::kernel::allocator as allocator;  
 use alloc::{boxed::Box, vec::Vec};
@@ -11,15 +12,16 @@ use alloc::{boxed::Box, vec::Vec};
 // Hilfsfunktion: Auf Return-Taste warten
 fn wait_for_return() {
 	
-	println!("");
   println!("Weiter mit <ENTER>");
 
    loop {
-      let mut key: key::Key = keyboard::key_hit();
+
+      let key = get_lastkey();
+      //let mut key: key::Key = keyboard::key_hit();
         
-      if key.valid() == true {
-		     if key.get_ascii() == 13 { break; }
-      }
+      //if key.valid() == true {
+	    if key == 13 { break; }
+      //}
    }
 }
 
@@ -28,7 +30,7 @@ fn demo() {
 
     /* Hier muss Code eingefuegt werden */
     println!("Demo 1/4: Allocate 2 struct using Box::new");
-    println!("=========================================\n");
+    //println!("=========================================");
     allocator::dump_free_list();
 
     struct Test {
@@ -37,7 +39,7 @@ fn demo() {
     }
 
     {
-    println!("\nStructs allozieren:");
+    println!("Structs allozieren:");
     let s1 = Box::new(Test { a: 1, b: 2 });
     let s2 = Box::new(Test { a: 3, b: 4 });
     println!("\ts1.a={}, s1.b={}", s1.a, s1.b);
