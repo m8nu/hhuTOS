@@ -13,7 +13,7 @@ use alloc::boxed::Box;
 use core::ptr::{self, null};
 use core::sync::atomic::{AtomicBool, Ordering};
 
-use crate::kernel::cpu;
+use crate::kernel::{cpu, interrupts};
 use crate::kernel::threads::scheduler::{self, prepare_block, Scheduler};
 use crate::kernel::threads::thread::Thread;
 use crate::mylib::queue::Queue;
@@ -49,17 +49,18 @@ impl Mutex {
 		/* Hier muss Code eingefuegt werden */
         let l = self.lock.load(Ordering::SeqCst);
         if l {
+            let was_enabled = cpu::disable_int_nested();
             let (curr, next) = prepare_block();
             if curr == ptr::null_mut() || next == ptr::null_mut() || curr == next {
                 panic!("No threads to switch to");
             } else {
                 unsafe {self.wait_queue.lock().enqueue(Box::from_raw(curr)); }
                 Thread::switch(curr, next);
-            }
+           }
+           cpu::enable_int_nested(was_enabled);
         } else {
             self.lock.store(true, Ordering::SeqCst);
         }
-
         MutexGuard { lock: self }
     }
 

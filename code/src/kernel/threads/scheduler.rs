@@ -82,7 +82,7 @@ impl Scheduler {
         self.active = Box::into_raw(that);
         return (cur, self.active);
       } else {
-        panic!("No thread to switch to");
+        return (ptr::null_mut(), ptr::null_mut());
       }
     } 
 

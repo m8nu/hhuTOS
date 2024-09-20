@@ -47,7 +47,7 @@ impl Board{
             }
         }
 
-        vga::draw_string(0, yres-10, vga::rgb_24(0, 0, 255), "(1) Toggle Draw, (3) Start/Stop, (4) Set Blocksize, (Enter) Next Generation");
+        vga::draw_string(0, yres-10, vga::rgb_24(0, 0, 255), "(1) Toggle Draw (WASD), (3) Start/Stop, (4) Set Blocksize, (Enter) Next Generation");
     }
 
     pub fn change_board_size(&mut self, size: BlockSize) {

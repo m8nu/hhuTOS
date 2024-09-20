@@ -103,14 +103,18 @@ impl isr::ISR for PitISR {
         }
         /* Hier muss Code eingefuegt werden */
 
-        // We try to switch to the next thread
-        let (cur, next) = scheduler::SCHEDULER.try_lock().unwrap().prepare_preempt();
-        if cur.is_null() || next.is_null() || cur == next {
-            return;
-        } else {
-            thread::Thread::switch(cur, next);
-        }
-        /* Hier muss Code eingefuegt werden */
+        // We try to switch to the next thread 
+        let opt= scheduler::SCHEDULER.try_lock();
+        let (cur, next);
+        if let Some(mut s) = opt {
+            (cur, next) = s.prepare_preempt();
+            if cur.is_null() || next.is_null() || cur == next {
+                return;
 
+            }
+        } else {
+            return;
+        }
+        thread::Thread::switch(cur, next);       
     }
 }
