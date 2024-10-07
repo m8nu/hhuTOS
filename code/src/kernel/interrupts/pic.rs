@@ -52,7 +52,7 @@ pub fn allow(irq: u32) {
 pub fn forbid(irq: u32) {
     /* Hier muss Code eingefuegt werden */
     let (port, irq_bit) = if irq < 8 {
-        (PIC_IMR1, irq) //Master
+        (PIC_IMR1, irq) //Master/
     } else {
         (PIC_IMR2, irq - 8) //Slave
     };
