@@ -1,12 +1,20 @@
+use crate::kernel::cpu;
 use crate::kernel::threads::scheduler;
-use crate::kernel::threads::thread::Thread;
 
-pub fn init() {
-    let hello_world_thread = Thread::new(scheduler::next_thread_id(), hello_world_thread_entry);
-    scheduler::Scheduler::ready(hello_world_thread);
-}
+pub extern "C" fn hello_world_thread_entry() {
+    //    let tid = scheduler::get_active_tid();
+    //    println!("Hello World! thread-id = {}", tid);
+    // kprintln!("Hello World");
+    //    let val = cpu::inb(1);
+    loop {
+        print!("U");
 
-#[no_mangle]
-extern "C" fn hello_world_thread_entry(myself: *mut Thread) {
-    println!("Hallo Welt von einem Thread!");
+        let mut x: u64 = 0;
+        loop {
+            x = x + 1;
+            if x > 100000000 {
+                break;
+            }
+        }
+    }
 }

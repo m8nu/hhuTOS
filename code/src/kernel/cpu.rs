@@ -3,41 +3,59 @@
    ╟─────────────────────────────────────────────────────────────────────────╢
    ║ Descr.: Different cpu functions are implemented here.                   ║
    ╟─────────────────────────────────────────────────────────────────────────╢
-   ║ Author: Michael Schoetter, Univ. Duesseldorf, 11.3.2023                 ║
+   ║ Author: Michael Schoetter, Univ. Duesseldorf, 9.6.2024                  ║
    ╚═════════════════════════════════════════════════════════════════════════╝
 */
 
 use core::arch::asm;
-use x86_64::instructions::port::Port;
-use x86_64::instructions::interrupts;
 
+/**
+ Description:
+    Write one byte to a port
 
-
-//
-// Schreibe 1 Byte an den gegebenen Port
-//
+ Parameters: \
+   `port` port address, 16 bit \
+   `data` data to be written, 8 bit
+*/
+#[inline]
 pub fn outb(port: u16, data: u8) {
-	unsafe {
-        let mut port = Port::new(port);
-        port.write(data as u8);
-    }
+   unsafe {
+      asm!(
+         "out dx, al",
+         in("dx") port,
+         in("al") data,
+      );
+   }
 }
 
 
-//
-// Lese ein Byte vom gegebenen Port
-//
+/**
+ Description: Read one byte from a port
+
+ Parameters: \
+    `port` port address, 16 bit \
+ Return: \
+   `data` data read, 8 bit
+*/
 pub fn inb(port: u16) -> u8 {
-	unsafe {
-        let mut port = Port::new(port);
-        port.read()
-    }
+   let ret: u8;
+   unsafe {
+      asm!(
+         "in al, dx",
+         in("dx") port,
+         out("al") ret,
+      );
+   }
+   ret
 }
 
+/**
+ Description: Check if IE bit is set in RFLAGS \
 
-//
-// Pruefe, ob Interrupts erlaubt sind
-//
+ Return: \
+   `true` if IE is set, `false` otherwise
+*/
+#[inline]
 pub fn is_int_enabled() -> bool {
 	let rflags: u64;
 
@@ -49,64 +67,75 @@ pub fn is_int_enabled() -> bool {
 }
 
 
-// 
-// Sperre Interrupts und gebe zurueck, ob die Interrupts
-// zuvor erlaubt waren. Dieses Funktion wird zusammen mit 
-// 'enable_int_nested' verwendet und verhinert, dass 
-// Interrupts versehentlich angeschaltet werden
-//
+/**
+ Description: clear IE bit in RFLAGS \
+
+ Return: \
+   `true` if IE was set already, `false` otherwise
+*/
+#[inline]
 pub fn disable_int_nested() -> bool {
 	let was_enabled = is_int_enabled();
 	disable_int();
 	was_enabled
 }
 
-
-//
-// Erlaube Interrups, falls 'was_enabled' true ist
-// Diese Funktion wird zusammen mit 'disable_int_nested' verwendet
-//
+/**
+ Description: set IE bit in RFLAGS only iff `was_enabled` 
+   is `true` otherwise do nothing.
+*/
+#[inline]
 pub fn enable_int_nested(was_enabled: bool) {
 	if was_enabled == true {
 		enable_int();
 	}
 }
 
-
-//
-// Enable interrupts
-//
+/**
+ Description: set IE bit in RFLAGS
+*/
+#[inline]
 pub fn enable_int () {
-   interrupts::enable();
+   unsafe { asm!( "sti" ); }
 }
     
     
-//
-// Disable interrupts
-//
+/**
+ Description: clear IE bit in RFLAGS
+*/
+#[inline]
 pub fn disable_int () {
-   interrupts::disable();
+   unsafe { asm!( "cli" ); }
 }
 
 
-//
-// Stop cpu
-//
+/**
+ Description: stop CPU, will be waked up by next interrupt
+*/
+#[inline]
 pub fn halt () {
    loop {
-      x86_64::instructions::hlt();
+      unsafe { asm!( "hlt" ); }
    }
 }
 
-
-
-//
-// Return rflags
-//
+/**
+ Description: return RFLAGS
+*/
+#[inline]
 pub fn getflags () -> u64 {
    let rflags: u64;
    unsafe {
        asm! ("pushfq; pop {}", out(reg) rflags, options(nomem, preserves_flags));
    }
    rflags  
+}
+
+/**
+ Description: spin loop hint
+*/
+pub fn pause() {
+    unsafe {
+        asm!("pause", options(nomem, nostack));
+    }
 }

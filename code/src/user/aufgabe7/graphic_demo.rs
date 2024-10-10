@@ -57,7 +57,7 @@ fn draw_colors() {
  Description: Entry function of the graphic demo thread
 */
 #[no_mangle]
-extern "C" fn graphic_thread_entry(myself: *mut thread::Thread) {
+extern "C" fn graphic_thread_entry() {
     let text_h = font_8x8::CHAR_HEIGHT;
 
     draw_colors();
@@ -86,6 +86,6 @@ extern "C" fn graphic_thread_entry(myself: *mut thread::Thread) {
  Description: Create and add the graphic demo thread
 */
 pub fn init() {
-    let graphic_thread = thread::Thread::new(scheduler::next_thread_id(), graphic_thread_entry);
+    let graphic_thread = thread::Thread::new(scheduler::next_thread_id(), graphic_thread_entry, false);
     scheduler::Scheduler::ready(graphic_thread);
 }

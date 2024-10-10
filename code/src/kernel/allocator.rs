@@ -5,47 +5,40 @@
    ║         compiler. The function 'init' must be called early in 'startup'.║
    ║                                                                         ║ 
    ║         Memory-Laylout                                                  ║
-   ║            0x0        real mode & bios stuff       	                   ║
-   ║            0x100000   our OS image, including global variables          ║ 
-   ║            0x500000   Start address of our heap                         ║ 
+   ║            0x0         real mode & bios stuff       	                 ║
+   ║            0x100000    our OS image, including global variables         ║ 
+   ║            heap_start  start address of our heap, see 'startup.rs'      ║ 
    ║                                                                         ║ 
    ║         Remarks                                                         ║
-   ║            - Requires a PC with at least 8 MB RAM                       ║
    ║            - Lowest loading address for grub is 1 MB                    ║ 
    ╟─────────────────────────────────────────────────────────────────────────╢
    ║ Author: Philipp Oppermann                                               ║
    ║         https://os.phil-opp.com/allocator-designs/                      ║
    ╚═════════════════════════════════════════════════════════════════════════╝
 */
-use crate::kernel::allocator::bump::BumpAllocator;
-use crate::kernel::allocator::list::LinkedListAllocator;
 use alloc::alloc::Layout;
 
-pub mod bump;
+use crate::consts;
+use crate::kernel::allocator::list::LinkedListAllocator;
+
 pub mod list;
 
-pub const HEAP_START: usize = 0x500000;
-pub const HEAP_SIZE: usize = 1024 * 1024;        // 1 MB heap size
-
-// defining the Allocator (which implements the 'GlobalAlloc' trait)
 #[global_allocator]
-//static ALLOCATOR: Locked<BumpAllocator> = Locked::new(BumpAllocator::new());
 static ALLOCATOR: Locked<LinkedListAllocator> = Locked::new(LinkedListAllocator::new());
+
 
 /**
  Description: Initialization of the allocator. Must be called early in 'startup'.
 */
-pub fn init() {
-    kprintln!("allocator::init");
+pub fn init(heap_start: usize, heap_size: usize) {
     unsafe {
-        ALLOCATOR.lock().init(HEAP_START, HEAP_SIZE);
+        ALLOCATOR.lock().init(heap_start, heap_size);
     }
-    kprintln!("allocator::init2");
 }
 
 /**
  Description: Allocates memory from the heap. 
-             Compiler generates code calling this function.
+              Compiler generates code calling this function.
 */
 pub fn alloc(layout: Layout) -> *mut u8 {
     unsafe {
@@ -55,7 +48,7 @@ pub fn alloc(layout: Layout) -> *mut u8 {
 
 /**
  Description: Deallocates memory from the heap. 
-             Compiler generates code calling this function.
+              Compiler generates code calling this function.
 */
 pub fn dealloc(ptr: *mut u8, layout: Layout) {
     unsafe {
@@ -103,4 +96,14 @@ fn align_up(addr: usize, align: usize) -> usize {
     } else {
         addr - remainder + align
     }
+}
+
+#[alloc_error_handler]
+pub fn rust_oom(layout: Layout) -> ! {
+    kprintln!(
+        "[!!!OOM!!!] Memory allocation of {} bytes failed",
+        layout.size()
+    );
+
+    loop {}
 }

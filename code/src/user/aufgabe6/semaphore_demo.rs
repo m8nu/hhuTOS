@@ -14,12 +14,11 @@ static LOCK: spinlock::Spinlock<i32> = spinlock::Spinlock::new(0);
 static MUTEX: Mutex = Mutex::new();
 
 #[no_mangle]
-extern "C" fn synced_loop_thread_entry(myself: *mut thread::Thread) {
-
+extern "C" fn synced_loop_thread_entry() {
+    
    /* Hier muss Code eingefuegt werden */
    let mut cnt = 0;
-   let my_tid = thread::Thread::get_tid(myself) as u64;
-
+    let my_tid = scheduler::get_active_tid() as u64;
     loop {
 
         /* Hier muss Code eingefuegt werden */
@@ -39,7 +38,7 @@ extern "C" fn synced_loop_thread_entry(myself: *mut thread::Thread) {
 }
 
 #[no_mangle]
-extern "C" fn music(myself: *mut thread::Thread){
+extern "C" fn music(){
     pcspk::among_us();
     pcspk::aerodynamic();
 }
@@ -47,10 +46,10 @@ extern "C" fn music(myself: *mut thread::Thread){
 pub fn init() {
 
    /* Hier muss Code eingefuegt werden */
-    let thread1 = thread::Thread::new(scheduler::next_thread_id(), synced_loop_thread_entry);
-    let thread2 = thread::Thread::new(scheduler::next_thread_id(), synced_loop_thread_entry);
-    let thread3 = thread::Thread::new(scheduler::next_thread_id(), synced_loop_thread_entry);
-    let thread4 = thread::Thread::new(scheduler::next_thread_id(), music);
+    let thread1 = thread::Thread::new(scheduler::next_thread_id(), synced_loop_thread_entry, false);
+    let thread2 = thread::Thread::new(scheduler::next_thread_id(), synced_loop_thread_entry, false);
+    let thread3 = thread::Thread::new(scheduler::next_thread_id(), synced_loop_thread_entry, false);
+    let thread4 = thread::Thread::new(scheduler::next_thread_id(), music, false);
 
     scheduler::Scheduler::ready(thread1);
     scheduler::Scheduler::ready(thread2);

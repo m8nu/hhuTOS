@@ -5,7 +5,7 @@ use super::coop_thread_loop;
 
 
 #[no_mangle]
-extern "C" fn coop_demo_thread_entry(myself: *mut thread::Thread) {
+extern "C" fn coop_demo_thread_entry() {
 
    /* Hier muss Code eingefuegt werden */
    coop_thread_loop::init();
@@ -27,7 +27,7 @@ pub fn init() -> usize {
 
    /* Hier muss Code eingefuegt werden */
    let tid = scheduler::next_thread_id();
-   let coop_demo_thread = thread::Thread::new(tid, coop_demo_thread_entry);
+   let coop_demo_thread = thread::Thread::new(tid, coop_demo_thread_entry, false);
    scheduler::Scheduler::ready(coop_demo_thread);
    return tid as usize;
 }

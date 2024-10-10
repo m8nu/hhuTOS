@@ -165,7 +165,7 @@ impl Scheduler {
         if tokill_tid == get_active_tid(){
             return;
         }
-        SCHEDULER.lock().ready_queue.remove(thread::Thread::new(tokill_tid,thread::kickoff_thread));
+        //SCHEDULER.lock().ready_queue.remove(thread::Thread::new(tokill_tid,thread::kickoff_kernel_thread, true));
     }
 
     

@@ -185,7 +185,7 @@ impl Board{
  Description: Entry function of the graphic demo thread
 */
 #[no_mangle]
-extern "C" fn game_run(myself: *mut thread::Thread) {
+extern "C" fn game_run() {
     let (xres, yres) = vga::get_res();
 
     let mut board = Board {
@@ -282,6 +282,6 @@ extern "C" fn game_run(myself: *mut thread::Thread) {
  Description: Create and add the graphic demo thread
 */
 pub fn init() { 
-    let game_thread = thread::Thread::new(scheduler::next_thread_id(), game_run);
+    let game_thread = thread::Thread::new(scheduler::next_thread_id(), game_run,false);
     scheduler::Scheduler::ready(game_thread);
 }
