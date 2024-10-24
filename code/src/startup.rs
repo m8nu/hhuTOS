@@ -34,6 +34,7 @@ mod user;
 
 use alloc::boxed::Box;
 use boot::multiboot;
+use devices::cga::clear;
 use core::panic::PanicInfo;
 
 use devices::cga;         // shortcut for cga
@@ -195,6 +196,8 @@ pub extern "C" fn kmain(mbi: u64) {
 
     // Zeitgeber-Unterbrechungsroutine 'einstoepseln'
     pit::plugin();
+
+    clear();
 
     // Idle-Thread eintragen
     let idle_thread = Thread::new(scheduler::next_thread_id(), idle_thread::idle_thread_entry, true);

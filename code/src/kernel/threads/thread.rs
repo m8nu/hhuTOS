@@ -42,7 +42,7 @@ pub struct Thread {
         Hier muss Code eingefuegt werden
     */
 
-    
+    user_stack: Box<stack::Stack>,
     kernel_stack: Box<stack::Stack>, // Speicher fuer den Kernel-Stack
     entry: extern "C" fn(),
 }
@@ -53,7 +53,7 @@ impl Thread {
 
         // Speicher fuer die Stacks anlegen
         let my_kernel_stack = stack::Stack::new(consts::STACK_SIZE);
-
+        let my_user_stack = stack::Stack::new(consts::STACK_SIZE);
 
         /*
            Hier muss Code eingefuegt werden
@@ -64,6 +64,7 @@ impl Thread {
             tid: my_tid,
             is_kernel_thread: kernel_thread,
             old_rsp0: 0,
+            user_stack: my_user_stack,
             kernel_stack: my_kernel_stack,
             entry: myentry,
         });

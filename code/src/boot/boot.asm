@@ -13,7 +13,7 @@
 ;* Der Assembler-Code stellt einen Stack mit 64 KB zur Verfuegung und sollte  *
 ;* Rust bald durch einen groesseren Stack ersetzt werden.                     *
 ;*                                                                            *
-;* Autor: Michael Schoettner, Uni Duesseldorf, 30.10.2023                     *
+;* Autor: Michael Schoettner, Uni Duesseldorf, 10.10.2024                     *
 ;******************************************************************************
 
 ;
@@ -271,7 +271,7 @@ _tss_set_base_address:
 			;
    ; Hier muss Code eingefuegt werden
    ;
-
+   ret
 
 ;
 ; Kernel-Stack im TSS = rsp0 setzen
@@ -299,22 +299,22 @@ _gdt:
 	  dw  0,0,0,0   ; NULL-Deskriptor
 
 	  ; Kernel 32-Bit-Codesegment-Deskriptor (nur fuer das Booten benoetigt)
-	  dw  0xFFFF    ; limit [00:15] = 4Gb - (0x100000*0x1000 = 4Gb)
-	  dw  0x0000    ; base  [00:15] = 0
-	  dw  0x9A00    ; base  [16:23] = 0, code read/exec, DPL=0, present
-	  dw  0x00CF    ; limit [16:19], granularity=4096, 386, base [24:31]
+	  dw  0xFFFF    ; [00:15] limit = 4Gb - (0x100000*0x1000 = 4Gb)
+	  dw  0x0000    ; [16:31] base = 0
+	  dw  0x9A00    ; [32:47] base = 0, code read/exec, DPL=0, present
+	  dw  0x00CF    ; [48:63] base, granularity=4096, IA32, 
 
 	  ; Kernel 64-Bit-Codesegment-Deskriptor
-  	dw  0xFFFF    ; limit [00:15] = 4Gb - (0x100000*0x1000 = 4Gb)
-	  dw  0x0000    ; base  [00:15] = 0
-	  dw  0x9A00    ; base  [16:23] = 0, code read/exec, DPL=0, present
-  	dw  0x00AF    ; limit [16:19], granularity=4096, 386, Long-Mode, base [24:31]
+  	dw  0xFFFF    ; [00:15] limit 
+	  dw  0x0000    ; [16:31] base 
+	  dw  0x9A00    ; [32:47] base (8 bits), type = code,  DPL=0, present
+  	dw  0x00AF    ; [48:63] limit (4 bits), long mode, granularity=4096
 
 	  ; Kernel 64-Bit-Datensegment-Deskriptor 
-	  dw  0xFFFF    ; limit [00:15] = 4Gb - (0x100000*0x1000 = 4Gb)
-	  dw  0x0000    ; base  [00:15] = 0
-	  dw  0x9200    ; base  [16:23] = 0, data read/write, DPL=0, present 
-	  dw  0x00CF    ; limit [16:19], granularity=4096, 386, base [24:31]
+	  dw  0xFFFF    ; [00:15] limit
+	  dw  0x0000    ; [16:31] base
+	  dw  0x9200    ; [32:47] base address (8 bits), type = data,  DPL=0, present 
+	  dw  0x00CF    ; [48:63] limit (4 bits), long mode, granularity=4096
 
 _gdt_80:
    ; 4 Eintraege in der GDT
@@ -342,10 +342,10 @@ _tss:
 ;
 ; Stack space 
 ;
-global _init_stack:data (_init_stack.end - _init_stack)
-_init_stack:
-	  resb STACKSIZE
-.end:
+	global _init_stack:data (_init_stack.end - _init_stack)
+	_init_stack:
+				resb STACKSIZE
+	.end:
 
 
 ;
