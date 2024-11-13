@@ -180,11 +180,30 @@ impl Thread {
         /*
             Hier muss Code eingefuegt werden
         */
+        let kickoff_user_addr = kickoff_user_thread as *const ();
+        let object: *const Thread = self;
+
+        // "sp0" und "sp3" zeigen ans Ende des jeweiligen Speicherblocks
+        let sp0: *mut u64 = self.kernel_stack.stack_end();
+        let sp3: *mut u64 = self.user_stack.stack_end();
 
         // Interrupt-Stackframe bauen
+        unsafe {
+            *sp0 = 0x00DEAD00 as u64;
+            *sp0.offset(-1) = ((5 << 3) | 3) as u64;
+            *sp0.offset(-2) = (self.user_stack.stack_end()) as u64;
+            *sp0.offset(-3) = 0x202;
+            *sp0.offset(-4) = ((4 << 3) | 3) as u64;
+            *sp0.offset(-5) = kickoff_kernel_thread as u64;
+            *sp0.offset(-6) = object as u64;
+        }
+        self.old_rsp0 = (sp0 as u64) - (6*8);
 
-        // In den Ring 3 schalten -> Aufruf von '_thread_user_start'
+        unsafe{
+            _thread_user_start(self.old_rsp0);
+        }
     }
+        // In den Ring 3 schalten -> Aufruf von '_thread_user_start'
 
     pub fn get_tid(thread_object: *const Thread) -> usize {
         unsafe { (*thread_object).tid }
@@ -258,6 +277,8 @@ pub extern "C" fn kickoff_user_thread(object: *mut Thread) {
     /*
         Hier muss Code eingefuegt werden
     */
-
+    unsafe {
+        ((*object).entry)();
+    }
     loop {}
 }

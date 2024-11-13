@@ -204,7 +204,7 @@ pub extern "C" fn kmain(mbi: u64) {
     scheduler::Scheduler::ready(idle_thread);
 
     // HelloWorld-Thread eintragen
-    let hello_world_thread = Thread::new(scheduler::next_thread_id(), hello_world_thread::hello_world_thread_entry, true);
+    let hello_world_thread = Thread::new(scheduler::next_thread_id(), hello_world_thread::hello_world_thread_entry, false);
     scheduler::Scheduler::ready(hello_world_thread);
 
     // Scheduler starten & Interrupts erlauben

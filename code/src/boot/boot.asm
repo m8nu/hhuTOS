@@ -233,44 +233,55 @@ _fill_tables3_done:
 _longmode_start:
     
    ; BSS löschen
-	  mov    rdi, ___BSS_START__
+	mov    rdi, ___BSS_START__
 _clear_bss:
-	  mov    byte [rdi], 0
-	  inc    rdi
-	  cmp    rdi, ___BSS_END__
-	  jne    _clear_bss
+	mov    byte [rdi], 0
+	inc    rdi
+	cmp    rdi, ___BSS_END__
+	jne    _clear_bss
 
    ; TSS-Basisadresse im GDT-Eintrag setzen
    call _tss_set_base_address
 
    ; Kernel-Stack im TSS setzen -> rsp0 
-			mov rdi, _init_stack.end 
+	mov rdi, _init_stack.end 
    call _tss_set_rsp0
 
    ; Lade TSS-Register mit dem TSS-Deskriptor
    
-			;
+   ;
    ; Hier muss Code eingefuegt werden
    ;
+   mov ax, 0x33
+   ltr ax
 
 
    ; 'kmain' mit Parametern aufrufen    
-	  xor    rax,rax
-	  mov    dword eax, _multiboot_addr
-	  mov    rdi, [rax]                 ; 1. Parameter wird in rdi uebergeben
-	  call   kmain ; kernel starten
-	
+	xor    rax,rax
+   mov    dword eax, _multiboot_addr
+	mov    rdi, [rax]                 ; 1. Parameter wird in rdi uebergeben
+	call   kmain ; kernel starten
+
   	cli            ; Hier sollten wir nicht hinkommen
-	  hlt
+	hlt
 
 
 ;
 ; TSS Basisadresse in GDT-Eintrag setzen
 ;
 _tss_set_base_address:
-			;
+   ;
    ; Hier muss Code eingefuegt werden
    ;
+   call _get_tss_address
+   mov rbx, _tssd
+   mov [rbx+2], al
+   shr rax, 8
+   mov [rbx+3], ax
+   shr rax, 16
+   mov [rbx+7], al
+   shr rax, 8
+   mov [rbx+8], eax
    ret
 
 ;
@@ -288,38 +299,59 @@ _get_tss_address:
    ret
 
 
-
-
 [SECTION .data]
 
 ;
 ; Segment-Deskriptoren
 ;
 _gdt:
-	  dw  0,0,0,0   ; NULL-Deskriptor
+	dw  0,0,0,0   ; NULL-Deskriptor
 
-	  ; Kernel 32-Bit-Codesegment-Deskriptor (nur fuer das Booten benoetigt)
-	  dw  0xFFFF    ; [00:15] limit = 4Gb - (0x100000*0x1000 = 4Gb)
-	  dw  0x0000    ; [16:31] base = 0
-	  dw  0x9A00    ; [32:47] base = 0, code read/exec, DPL=0, present
-	  dw  0x00CF    ; [48:63] base, granularity=4096, IA32, 
+	; Kernel 32-Bit-Codesegment-Deskriptor (nur fuer das Booten benoetigt)
+	dw  0xFFFF    ; [00:15] limit = 4Gb - (0x100000*0x1000 = 4Gb)
+	dw  0x0000    ; [16:31] base = 0
+	dw  0x9A00    ; [32:47] base = 0, code read/exec, DPL=0, present
+	dw  0x00CF    ; [48:63] base, granularity=4096, IA32, 
 
-	  ; Kernel 64-Bit-Codesegment-Deskriptor
+	; Kernel 64-Bit-Codesegment-Deskriptor
   	dw  0xFFFF    ; [00:15] limit 
-	  dw  0x0000    ; [16:31] base 
-	  dw  0x9A00    ; [32:47] base (8 bits), type = code,  DPL=0, present
+	dw  0x0000    ; [16:31] base 
+	dw  0x9A00    ; [32:47] base (8 bits), type = code,  DPL=0, present
   	dw  0x00AF    ; [48:63] limit (4 bits), long mode, granularity=4096
 
-	  ; Kernel 64-Bit-Datensegment-Deskriptor 
-	  dw  0xFFFF    ; [00:15] limit
-	  dw  0x0000    ; [16:31] base
-	  dw  0x9200    ; [32:47] base address (8 bits), type = data,  DPL=0, present 
-	  dw  0x00CF    ; [48:63] limit (4 bits), long mode, granularity=4096
+	; Kernel 64-Bit-Datensegment-Deskriptor 
+	dw  0xFFFF    ; [00:15] limit
+	dw  0x0000    ; [16:31] base
+	dw  0x9200    ; [32:47] base address (8 bits), type = data,  DPL=0, present 
+	dw  0x00CF    ; [48:63] limit (4 bits), long mode, granularity=4096
+
+	; User 64-Bit-Codesegment-Deskriptor
+  	dw  0xFFFF    ; [00:15] limit 
+	dw  0x0000    ; [16:31] base 
+	dw  0xFA00    ; [32:47] base (8 bits), type = code,  DPL=3, present
+  	dw  0x00AF    ; [48:63] limit (4 bits), long mode, granularity=4096
+
+	; User 64-Bit-Datensegment-Deskriptor 
+	dw  0xFFFF    ; [00:15] limit
+	dw  0x0000    ; [16:31] base
+	dw  0xF200    ; [32:47] base address (8 bits), type = data,  DPL=3, present 
+	dw  0x00CF    ; [48:63] limit (4 bits), long mode, granularity=4096
+
+_tssd:
+	; User 128-Bit-TSS-Deskriptor
+	dw  0x0067    ; [00:15] limit
+	dw  0x0000    ; [16:31] base
+	dw  0x8900    ; [32:47] base address (8 bits), type = data,  DPL=0, present 
+	dw  0x0000    ; [48:63] limit (4 bits), long mode, granularity=1
+	dw  0x0000    ; [64:79] base
+	dw  0x0000    ; [80:95] base
+	dw  0x0000    ; [96:111] reserved
+	dw  0x0000    ; [112:128] reserved
 
 _gdt_80:
-   ; 4 Eintraege in der GDT
-			dw  4*8 - 1   ; GDT Limit=32, 7 GDT Eintraege - 1
-	  dq  _gdt      ; Adresse der GDT
+	; 7 Eintraege in der GDT mit TSSD
+	dw  8*8 - 1   ; GDT Limit=64, 7 GDT Eintraege - 1
+	dq  _gdt      ; Adresse der GDT
 
 ;
 ; Addresse fuer die Multiboot-Infos wird hier gesichert
