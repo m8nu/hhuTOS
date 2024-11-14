@@ -7,7 +7,7 @@ pub extern "C" fn hello_world_thread_entry() {
     // kprintln!("Hello World");
     //    let val = cpu::inb(1);
     loop {
-        print!("U");
+        //print!("U");
 
         let mut x: u64 = 0;
         loop {

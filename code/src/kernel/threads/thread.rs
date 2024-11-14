@@ -90,8 +90,7 @@ impl Thread {
             kprint!(
                 "preempt: tid={}, old_rsp0={:x}",
                 Thread::get_tid(now),
-                (*now).old_rsp0
-            );
+               (*now).old_rsp0);
             kprintln!(
                 " and switch to tid={}, old_rsp0={:x}",
                 Thread::get_tid(then),
